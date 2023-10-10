@@ -1,10 +1,9 @@
-import socket
 from socket import *
-import threading
+from threading import *
 import random
 
-serverPort = 12000
-serverName = 'oblOpg'
+serverPort = 7
+serverName = 'localhost'
 
 serverSocket = socket(AF_INET,SOCK_STREAM)
 serverSocket.bind(('', serverPort))
@@ -14,22 +13,27 @@ print('The server is ready to receive')
 def handleClient(connectionSocket, address):
     type = connectionSocket.recv(1024).decode()
     type = type.lower()
-    firstNumber = connectionSocket.recv(1024).decode()
-    secondNumber = connectionSocket.recv(1024).decode()
+    firstNumber = int(connectionSocket.recv(1024).decode())
+    secondNumber = int(connectionSocket.recv(1024).decode())
+
+    result = 0
 
     if type == 'random':
-        connectionSocket.send(random.randint(firstNumber, secondNumber))
+        result = random.randint(firstNumber, secondNumber)
 
     if type == 'add':
-        connectionSocket.send(firstNumber + secondNumber)
+        result = firstNumber + secondNumber
 
     if type == 'subtract':
-        connectionSocket.send(firstNumber - secondNumber)  
+        result = firstNumber - secondNumber 
 
+    result = str(result)
+    print(result)
+    connectionSocket.send(result.encode())
     connectionSocket.close()
 
 
 while True:
     connectionSocket, addr = serverSocket.accept()
-    handleClient(connectionSocket, addr)
+    Thread(target=handleClient, args=(connectionSocket, addr)).start()
 
